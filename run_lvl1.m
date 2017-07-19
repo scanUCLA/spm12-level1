@@ -1,17 +1,11 @@
-function [status, error, cond] = run_lvl1(subDat, subjectDir, analysisID, batchDir)
-
-% Customizable SPM design/estimation parameters:
-TR = 1; % What is your TR (in secs)
-funcFormat = 2; % What format are your functional images in? 1=3D img/hdr, 2=4D nii
-acTAG = 1; % autocorrelation correction: 0=no, 1=yes
-rpTAG = 1; % include motion regressors: 0=no, 1=yes
-hpf = 128; % high-pass filter (in secs)
-brainmask = '/space/raid/fmri/spm12/toolbox/FieldMap/brainmask.nii'; % Mask for the analysis:
-
-% Run now?
-execTAG = 1;
+function [status, error, cond] = run_lvl1(subDat, subjectDir, analysisID, batchDir,...
+    execTAG, TR, funcFormat, acTAG, rpTAG, hpf, brainMask)
 
 %% Setup
+
+status = [];
+error = [];
+cond = [];
 
 % Create level 1 dir in subject folder
 lvl1Dir = [subjectDir '/' subDat.name '/analysis/' analysisID];
@@ -32,7 +26,7 @@ spm12_path;
 spm('defaults','fmri');   % initiatizes SPM defaults for fMRI modality
 spm_jobman('initcfg');    % initializes job configurations
 
-%% Organize task data
+%% Organize task data (EDIT this section to match your task)
 try
     load(subDat.behavPath)
     output = output;
@@ -77,7 +71,9 @@ catch
 end
 
 
-%% Design Specification
+%% Make matlabbatch (EDIT this section to match your task)
+
+% Design specification
 try
     % Directory where to save outputs
     matlabbatch{1}.spm.stats.fmri_spec.dir{1} = lvl1Dir;
@@ -92,7 +88,7 @@ try
     matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];
     matlabbatch{1}.spm.stats.fmri_spec.volt = 1;
     matlabbatch{1}.spm.stats.fmri_spec.global = 'None';
-    matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
+    matlabbatch{1}.spm.stats.fmri_spec.cvi = ['AR(' num2str(acTAG) ')'];
     
     % Session-specific design info
     for r = 1:length(subDat.rpPath)
@@ -127,21 +123,19 @@ try
         end
         matlabbatch{1}.spm.stats.fmri_spec.sess(r).hpf = hpf;
     end
-    matlabbatch{1}.spm.stats.fmri_spec.mask{1} = brainmask;
+    matlabbatch{1}.spm.stats.fmri_spec.mask{1} = brainMask;
 catch
     status = 0;
     error = 'error making design specification';
     return
 end
 
-%% Design Estimation
-
+% Design Estimation
 matlabbatch{2}.spm.stats.fmri_est.spmmat{1} = fullfile(lvl1Dir, 'SPM.mat');
 matlabbatch{2}.spm.stats.fmri_est.write_residuals = 0;
 matlabbatch{2}.spm.stats.fmri_est.method.Classical = 1;
 
-%% Contrast Manager
-
+% Contrast Manager
 matlabbatch{3}.spm.stats.con.spmmat{1} = fullfile(lvl1Dir,'SPM.mat');
 
 matlabbatch{3}.spm.stats.con.consess{1}.tcon.name = 'sleep';
@@ -189,7 +183,7 @@ matlabbatch{3}.spm.stats.con.consess{10}.tcon.sessrep = 'bothsc';
 %% Run Job
 % Save matlabbatch
 time_stamp = datestr(now,'yyyymmdd_HHMM');   % timestamp is a function name, hence the _ in time_stamp
-filename = [batchDir '/' subDat.name '_RED_170426_' time_stamp '.mat'];
+filename = [batchDir '/' subDat.name '_' analysisID '_' time_stamp '.mat'];
 save(filename,'matlabbatch');
 
 % Run matlabbatch

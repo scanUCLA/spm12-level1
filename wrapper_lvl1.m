@@ -1,19 +1,34 @@
+%% SPM12 level1 example script
+% Created by Kevin Tan 
+
+% IMPORTANT:
+% This is only a framework to make a working level1 script for your task
+% You will have to make major edits on sections that say "edit this to
+% match your task" in *both* the 'wrapper' script and 'run' function
+
+% ADDITIONAL INFO:
+% https://github.com/scanUCLA/spm12-level1
+
 %% User-editable parameters
 
 % Path of study
-studyDir='/space/raid8/data/lieber/MINERVA2/nondartel';
+studyDir='/u/project/sanscn/data/MINERVA2/nondartel';
 
 % Path of directory in which subjects' folders live
-subjectDir='/space/raid8/data/lieber/MINERVA2/nondartel/data';
+subjectDir='/u/project/sanscn/data/MINERVA2/nondartel/data';
 
 % What would you like to name the analysis? (folder will be automatically created in subject's analysis folder)
-analysisID = 'RED_170426';
+analysisID = 'RED170719';
 
 % Where to save SPM batches
-batchDir = '/space/raid8/data/lieber/MINERVA2/nondartel/level1/RED_170426/batches';
+batchDir = '/u/project/sanscn/kevmtan/scripts/SPM12_level1/RED170719_batches';
 
 % What pattern should be used for finding subject folders? (use wildcards)
 subName = 'SLEEP_*';
+
+% First & last indices of subject folder that contain subject ID
+charID1 = 7; % e.g. for SLEEP_### characters 7-9 contain subject ID
+charID2 = 9;
 
 % What pattern should be used for finding functional folders? (use wildcards)
 runName = {'BOLD_Reddit_A_*', 'BOLD_Reddit_B_*'};
@@ -32,22 +47,23 @@ taskDatExist = 1; % 1=yes, 0=no
 taskDatPath = '/space/raid8/data/lieber/MINERVA2/fMRI_Tasks/Reddit_Task/data';
 %taskDatName = 'MINERVA2Output_subj*_STRUCT.mat';
 
-% % Customizable SPM design/estimation parameters:
-% TR = 2; % What is your TR (in secs)
-% funcFormat = 2; % What format are your functional images in? 1=3D img/hdr, 2=4D nii
-% acTAG = 0; % autocorrelation correction: 0=no, 1=yes
-% rpTAG = 1; % include motion regressors: 0=no, 1=yes
-% hpf = 128; % high-pass filter (in secs)
-% brainmask = '/home/kevin/Documents/MATLAB/spm12/toolbox/FieldMap/brainmask.nii'; % Mask for the analysis:
+% Customizable SPM design/estimation parameters:
+TR = 1; % What is your TR (in secs)
+funcFormat = 2; % What format are your functional images in? 1=3D img/hdr, 2=4D nii
+acTAG = 1; % autocorrelation correction: 0=no, 1=yes
+rpTAG = 1; % include motion regressors: 0=no, 1=yes
+hpf = 128; % high-pass filter (in secs)
+brainMask = '/u/project/CCN/apps/spm12/toolbox/FieldMap/brainmask.nii'; % Mask for the analysis:
 
+% Run or just make batch script files?
+execTAG = 1; % 1=run, 0=just make batch scripts
 %% Set-up subjects
 
-% % Make directory in which to save job files
-% batchDir = sprintf('%s/scripts/level1/gratitude/%s/batches',studyDir,analysisID);
-% try
-%     mkdir(batchDir);
-% catch
-% end
+% Make directory in which to save job files
+try
+    mkdir(batchDir);
+catch
+end
 
 spm('defaults','fmri');   % initiatizes SPM defaults for fMRI modality
 spm_jobman('initcfg');    % initializes job configurations
@@ -75,8 +91,6 @@ for ii = 1:length(d)
             subInfo(ii).funcPath{r} = cellstr(strcat(vols));
             subInfo(ii).rpPath{r} = rpPath;
         end
-        
-        
         subInfo(ii).status = NaN;
         subInfo(ii).error = 'Not run yet';
     catch
@@ -137,7 +151,7 @@ if noFunc == 1
     end
 end
 
-% Check if remaining subs have behav task data (edit this to match your data!)
+% Check if remaining subs have behav task data (EDIT this to match your data!)
 if taskDatExist
     disp('Finding behavioral data from task...');
     noBehav = 0;
@@ -175,7 +189,9 @@ for s = 1:length(subInfo)
         disp(['Running subject ' subInfo(s).name]);
         try           
             % Run subject
-            [subInfo(s).status, subInfo(s).error, subInfo(s).cond] = run_lvl1(subInfo(s), subjectDir, analysisID, batchDir);
+            [subInfo(s).status, subInfo(s).error, subInfo(s).cond] = run_lvl1(...
+                subInfo(s), subjectDir, analysisID, batchDir, execTAG, TR, funcFormat,...
+                acTAG, rpTAG, hpf, brainMask);
             if subInfo(s).status == 1
                 disp(['subject ' subInfo(s).name ' successful']);
             elseif subInfo(s).status == 0
