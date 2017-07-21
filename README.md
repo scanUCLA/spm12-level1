@@ -6,5 +6,5 @@ This is example code to make/run level1 batch scripts on SPM12. The 'wrapper' sc
 
 <b>Current issues:</b>
 * Bother with finding subject IDs or just use subject folder names?
-* When to parfor or for
+* When to use parfor or for
 * Still need to properly test on Hoffman2 once the /u/project/sanscn/data permissions issues are sorted out

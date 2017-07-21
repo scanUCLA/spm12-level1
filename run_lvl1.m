@@ -140,7 +140,7 @@ matlabbatch{3}.spm.stats.con.spmmat{1} = fullfile(lvl1Dir,'SPM.mat');
 
 matlabbatch{3}.spm.stats.con.consess{1}.tcon.name = 'sleep';
 matlabbatch{3}.spm.stats.con.consess{1}.tcon.convec = [1 0 0];
-matlabbatch{3}.spm.stats.con.consess{1}.tcon.sessrep = 'bothsc';
+matlabbatch{3}.spm.stats.con.consess{1}.tcon.sessrep = 'bothsc'; % 'bothsc'  
 
 matlabbatch{3}.spm.stats.con.consess{2}.tcon.name = 'control';
 matlabbatch{3}.spm.stats.con.consess{2}.tcon.convec = [0 1 0];

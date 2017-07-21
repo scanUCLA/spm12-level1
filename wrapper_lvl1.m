@@ -6,7 +6,7 @@
 % You will have to make major edits on sections that say "edit this to
 % match your task" in *both* the 'wrapper' script and 'run' function
 
-% ADDITIONAL INFO:
+% MORE IMPORTANT INFO:
 % https://github.com/scanUCLA/spm12-level1
 
 %% User-editable parameters
@@ -18,10 +18,10 @@ studyDir='/u/project/sanscn/data/MINERVA2/nondartel';
 subjectDir='/u/project/sanscn/data/MINERVA2/nondartel/data';
 
 % What would you like to name the analysis? (folder will be automatically created in subject's analysis folder)
-analysisID = 'RED170719';
+analysisID = 'RED170720';
 
 % Where to save SPM batches
-batchDir = '/u/project/sanscn/kevmtan/scripts/SPM12_level1/RED170719_batches';
+batchDir = '/u/project/sanscn/kevmtan/scripts/SPM12_level1/RED170720_batches';
 
 % What pattern should be used for finding subject folders? (use wildcards)
 subName = 'SLEEP_*';
@@ -56,7 +56,7 @@ hpf = 128; % high-pass filter (in secs)
 brainMask = '/u/project/CCN/apps/spm12/toolbox/FieldMap/brainmask.nii'; % Mask for the analysis:
 
 % Run or just make batch script files?
-execTAG = 1; % 1=run, 0=just make batch scripts
+execTAG = 0; % 1=run, 0=just make batch scripts
 %% Set-up subjects
 
 % Make directory in which to save job files
