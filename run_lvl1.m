@@ -28,7 +28,7 @@ spm_jobman('initcfg');    % initializes job configurations
 
 %% Organize task data (EDIT this section to match your task)
 try
-    load(subDat.behavPath)
+    load(subDat.taskPath)
     output = output;
     
     % Sanity check subject ID
@@ -82,7 +82,7 @@ try
     matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
     matlabbatch{1}.spm.stats.fmri_spec.timing.RT = TR;
     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t = 16;
-    matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0 = 1;
+    matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0 = 8; % SPM12 default=8, SPM8=1
     
     % Params
     matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];

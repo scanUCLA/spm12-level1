@@ -44,8 +44,8 @@ doSubs = {};  % Use the full subject's folder name in single quotes e.g.: {'w001
 
 % Location of task data (will have to edit rest of code if you have this)
 taskDatExist = 1; % 1=yes, 0=no
-taskDatPath = '/space/raid8/data/lieber/MINERVA2/fMRI_Tasks/Reddit_Task/data';
-%taskDatName = 'MINERVA2Output_subj*_STRUCT.mat';
+taskDatPath = '/u/project/sanscn/data/MINERVA2/fMRI_Tasks/Reddit_Task/data';
+taskDatName = 'MINERVA2Output_subj*_STRUCT.mat'; % Use wildcards
 
 % Customizable SPM design/estimation parameters:
 TR = 1; % What is your TR (in secs)
@@ -68,18 +68,26 @@ end
 spm('defaults','fmri');   % initiatizes SPM defaults for fMRI modality
 spm_jobman('initcfg');    % initializes job configurations
 
-% Find all subject folders and their functional image paths
+% Find all subject folders
 d = dir([subjectDir '/' subName]);
 subInfo = struct;
+
+% Find task files
+if taskDatExist
+    taskPaths = strsplit(ls([taskDatPath '/' taskDatName]),'\n');
+end
+
+% Find paths for image files, motion params, and task data for each subject
 for ii = 1:length(d)
-    subInfo(ii).ID = str2double(d(ii).name(7:9));
+    subInfo(ii).ID = str2double(d(ii).name(charID1:charID2));
     subInfo(ii).name = d(ii).name;
     subInfo(ii).funcPath = [];
     subInfo(ii).rpPath = [];
-    subInfo(ii).behavPath = [];
+    subInfo(ii).taskPath = [];
     subInfo(ii).status = NaN;
     subInfo(ii).error = [];
     
+    % Find functionals and motion params
     try
         for r = 1:length(runName)
             % Have to do this because SPM is insane
@@ -97,13 +105,18 @@ for ii = 1:length(d)
         subInfo(ii).status = 0;
         subInfo(ii).error = 'functionals/rp file not found';
     end
-    try
-        behavPath = strtrim(ls([taskDatPath '/MINERVA2Output_subj' d(ii).name(7:9) '_STRUCT.mat']));
-        subInfo(ii).behavPath = behavPath;
-    catch
-        subInfo(ii).status = 0;
-        subInfo(ii).error = [subInfo(ii).error ' & task behavioral data not found'];
-    end    
+    
+    % Find behavioral task data
+    if taskDatExist
+        try
+            taskPath = regexpi(taskPaths, regexptranslate('wildcard',['*' d(ii).name(charID1:charID2) '*']), 'match');
+            taskPath(cellfun('isempty',taskPath)) = [];
+            subInfo(ii).taskPath = taskPath{1:length(taskPath)};
+        catch
+            subInfo(ii).status = 0;
+            subInfo(ii).error = [subInfo(ii).error ' & task behavioral data not found'];
+        end
+    end
 end
         
 % Do only specified subjects
@@ -151,16 +164,16 @@ if noFunc == 1
     end
 end
 
-% Check if remaining subs have behav task data (EDIT this to match your data!)
+% Check if remaining subs have task behavioral data (EDIT this to match your data!)
 if taskDatExist
     disp('Finding behavioral data from task...');
     noBehav = 0;
     for ii = 1:length(subInfo)
-        if isempty(subInfo(ii).behavPath)
-            warning(['behavioral data for ' subInfo(ii).name ' could not be found!']);
+        if isempty(subInfo(ii).taskPath)
+            warning(['task data for ' subInfo(ii).name ' could not be found!']);
             noBehav = 1;
         else
-            disp(['Adding behavioral data for ' subInfo(ii).name]);
+            disp(['Adding task data for ' subInfo(ii).name]);
         end
     end
     disp(' ');
@@ -169,11 +182,11 @@ if taskDatExist
         disp(' ');
         disp('WARNING: task data for the above subject(s) could not be found (see "subInfo" variable)...');
         disp(' ');
-        continueStr = input('Continue and skip subjects without task data? (1=yes, 0=no): ');
+        continueStr = input('Continue and skip subjects without behav task data? (1=yes, 0=no): ');
         if continueStr == 1
-            disp('Continuing, skipping subjects without task data...');
+            disp('Continuing, skipping subjects without behav task data...');
         else
-            error('ERROR: all subjects require task data, check their directories');
+            error('ERROR: all subjects require behav task data, check their directories');
         end
     else
         disp('Task data found for all subjects!');
