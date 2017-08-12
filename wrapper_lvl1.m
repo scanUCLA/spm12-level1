@@ -57,6 +57,9 @@ brainMask = '/u/project/CCN/apps/spm12/toolbox/FieldMap/brainmask.nii'; % Mask f
 
 % Run or just make batch script files?
 execTAG = 0; % 1=run, 0=just make batch scripts
+
+% Max number of parpool workers
+nWorkers = maxNumCompThreads; % maxNumCompThreads = all available in node, or specify integer (e.g. 12)
 %% Set-up subjects
 
 % Make directory in which to save job files
@@ -86,6 +89,7 @@ for ii = 1:length(d)
     subInfo(ii).taskPath = [];
     subInfo(ii).status = NaN;
     subInfo(ii).error = [];
+    subInfo(ii).cond = [];
     
     % Find functionals and motion params
     try
@@ -194,8 +198,14 @@ if taskDatExist
 end
 
 %% Make and run batches
-%pool = parpool('local', 12);
-for s = 1:length(subInfo)
+
+% Number of workers (threads) matlab should use
+numSubs = length(subInfo);
+
+% Determine number of parallel workers
+nWorkers = min(numSubs, nWorkers);
+parpool('local', nWorkers);
+parfor s = 1:numSubs
     if subInfo(s).status == 0 % Skip subjects or not
         disp(['Skipping subject ' subInfo(s).name ': ' subInfo(s).error]);
     else
@@ -217,7 +227,7 @@ for s = 1:length(subInfo)
         end
     end
 end
-%delete(pool);
+delete(gcp('nocreate'));
 
 % Save SubInfo struct
 date = datestr(now,'yyyymmdd_HHMM');

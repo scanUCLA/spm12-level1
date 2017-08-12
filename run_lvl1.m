@@ -22,7 +22,6 @@ if exist([lvl1Dir 'SPM.mat'], 'file')
 end
 
 % Start SPM
-spm12_path;
 spm('defaults','fmri');   % initiatizes SPM defaults for fMRI modality
 spm_jobman('initcfg');    % initializes job configurations
 
