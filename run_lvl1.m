@@ -134,7 +134,7 @@ matlabbatch{2}.spm.stats.fmri_est.spmmat{1} = fullfile(lvl1Dir, 'SPM.mat');
 matlabbatch{2}.spm.stats.fmri_est.write_residuals = 0;
 matlabbatch{2}.spm.stats.fmri_est.method.Classical = 1;
 
-% Contrast Manager
+% Contrast Manager (all positive weights should sum to 1, all negative weights should sum to -1; if contrast vector length < regressor length, missing weights will be treated as 0)
 matlabbatch{3}.spm.stats.con.spmmat{1} = fullfile(lvl1Dir,'SPM.mat');
 
 matlabbatch{3}.spm.stats.con.consess{1}.tcon.name = 'sleep';
